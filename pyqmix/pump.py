@@ -21,7 +21,7 @@ syringes = {'25 mL glass': dict(inner_diameter_mm=23.03294,
                                 max_piston_stroke_mm=60),
             '50 mL glass': dict(inner_diameter_mm=32.57350,
                                 max_piston_stroke_mm=60),
-            '3 mL glass': dict(inner_diameter_mm=5.5,
+            '3 mL steel': dict(inner_diameter_mm=5.5,
                                 max_piston_stroke_mm=60)}
 
 class QmixPump(object):
