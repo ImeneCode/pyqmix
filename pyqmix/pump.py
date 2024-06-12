@@ -1068,3 +1068,147 @@ def empty_syringes(pumps, volume=None, flow_rate=1):
 
     while any([p.is_pumping for p in pumps]):
         time.sleep(0.0005)
+    @property
+    # ... autres méthodes existantes ...
+    
+    def has_force_monitoring(self):
+        """
+        Vérifie si la pompe prend en charge la fonctionnalité de surveillance de la force.
+    
+        Returns
+        -------
+        bool
+            `True` si la surveillance de la force est prise en charge, `False` sinon.
+        """
+        result = self._call('LCP_HasForceMonitoring', self._handle[0])
+        return bool(result)
+    
+    def get_force_unit(self):
+        """
+        Renvoie l'unité de force utilisée pour toutes les fonctions liées à la force.
+    
+        Returns
+        -------
+        OrderedDict
+        Un dictionnaire avec les clés `prefix` et `unitid`.
+        """
+        prefix = self._ffi.new('int *')
+        force_unit = self._ffi.new('int *')
+        self._call('LCP_GetForceUnit', self._handle[0], prefix, force_unit)
+    
+        # Convertir les résultats en chaîne lisible
+        prefix_str = self._prefix_to_string(prefix[0])
+        force_unit_str = self._force_unit_to_string(force_unit[0])
+    
+        return OrderedDict([('prefix', prefix_str), ('unitid', force_unit_str)])
+    
+    def enable_force_monitoring(self, enable):
+        """
+        Active ou désactive la surveillance de la force.
+    
+        Parameters
+        ----------
+        enable : bool
+            `True` pour activer, `False` pour désactiver la surveillance de la force.
+        """
+        self._call('LCP_EnableForceMonitoring', self._handle[0], int(enable))
+    
+    def is_force_monitoring_enabled(self):
+        """
+        Vérifie si la surveillance de la force est activée.
+    
+        Returns
+        -------
+        bool
+            `True` si la surveillance de la force est activée, `False` sinon.
+        """
+        result = self._call('LCP_IsForceMonitoringEnabled', self._handle[0])
+        return bool(result)
+    
+    def get_max_device_force(self):
+        """
+        Retourne la force maximale que l'hardware de la pompe peut gérer.
+    
+        Returns
+        -------
+        float
+            La force maximale en Newton.
+        """
+        max_force = self._ffi.new('double *')
+        self._call('LCP_GetMaxDeviceForce', self._handle[0], max_force)
+        return max_force[0]
+    
+    def write_force_limit(self, force_limit):
+        """
+        Définit une limite de force personnalisée.
+    
+        Parameters
+        ----------
+        force_limit : float
+            La limite de force souhaitée en Newton.
+        """
+        self._call('LCP_WriteForceLimit', self._handle[0], force_limit)
+    
+    def get_force_limit(self):
+        """
+        Renvoie la limite de force actuellement définie.
+    
+        Returns
+        -------
+        float
+            La limite de force en Newton.
+        """
+        limit = self._ffi.new('double *')
+        self._call('LCP_GetForceLimit', self._handle[0], limit)
+        return limit[0]
+    
+    def read_force_sensor(self):
+        """
+         Lit la force actuelle à partir du capteur de force.
+    
+        Returns
+        -------
+        float
+         La force mesurée en Newton.
+        """
+        force = self._ffi.new('double *')
+        self._call('LCP_ReadForceSensor', self._handle[0], force)
+        return force[0]
+    
+    def is_force_safety_stop_active(self):
+        """
+        Vérifie si l'arrêt de sécurité de la force est actif.
+    
+        Returns
+        -------
+        bool
+            `True` si l'arrêt de sécurité est actif, `False` sinon.
+        """
+        result = self._call('LCP_IsForceSafetyStopActive', self._handle[0])
+        return bool(result)
+    
+    def clear_force_safety_stop(self):
+        """
+        Efface ou reconnaît l'arrêt de sécurité de la force.
+        """
+        self._call('LCP_ClearForceSafetyStop', self._handle[0])
+    
+    # Ajoutez des méthodes utilitaires privées pour convertir les préfixes et les unités
+    def _prefix_to_string(self, prefix):
+        if prefix == self._dll.MICRO:
+            return 'micro'
+        elif prefix == self._dll.MILLI:
+            return 'milli'
+        elif prefix == self._dll.CENTI:
+            return 'centi'
+        elif prefix == self._dll.DECI:
+            return 'deci'
+        else:
+            return 'unit'
+    
+    def _force_unit_to_string(self, force_unit):
+        if force_unit == self._dll.NEWTON:
+            return 'newton'
+        else:
+            raise RuntimeError('Invalid force unit retrieved.')
+    
